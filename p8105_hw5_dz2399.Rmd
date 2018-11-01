@@ -8,5 +8,27 @@ output: github_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
+library(purrr)
+```
+
+## Creating a dataset
+```{r}
+files_name <- list.files('./data')
+read_df <- function(x){
+  df <- read_csv(paste0('./data/',x))
+  df
+}
+
+id <- files_name %>% 
+  str_replace('.csv','') %>%
+  str_split('_',simplify = T)                                                         
+colnames(id) <- c('arm','subject_id')
+id <- mutate(as.tibble(id), subject_id=as.numeric(subject_id))
+  
+df_all <- purrr::map(files_name,read_df) %>% 
+  bind_rows() 
+
+df_all <- cbind(id,df_all)
+  
 ```
 
