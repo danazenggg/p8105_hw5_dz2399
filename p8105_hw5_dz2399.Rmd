@@ -12,12 +12,11 @@ library(purrr)
 ```
 
 ## Creating a dataset
-```{r}
+```{r,message=F}
 files_name <- list.files('./data')
 read_df <- function(x){
   df <- read_csv(paste0('./data/',x))
-  df
-}
+  df}
 
 id <- files_name %>% 
   str_replace('.csv','') %>%
@@ -26,9 +25,22 @@ colnames(id) <- c('arm','subject_id')
 id <- mutate(as.tibble(id), subject_id=as.numeric(subject_id))
   
 df_all <- purrr::map(files_name,read_df) %>% 
-  bind_rows() 
+  bind_rows(.id='id') 
 
-df_all <- cbind(id,df_all)
-  
+df_all <- cbind(id,df_all) %>% 
+  gather(key=week, value=value, week_1:week_8) %>% 
+  mutate(week=str_replace(week, 'week_','')) %>% 
+  mutate(week=as.numeric(week))
+
+label <- c('con'='Control', 'exp'='Experiment')
+
+ggplot(df_all, aes(x=week, y=value,color=id))+
+  geom_line()+
+  facet_grid(.~arm,labeller=as_labeller(label))+
+  ggtitle('Observations on each subject over time')+
+  theme(legend.position='bottom')
 ```
+
+As the graph shows, the experiment group shows an increasing trend over time while the control group stays the same.
+
 
