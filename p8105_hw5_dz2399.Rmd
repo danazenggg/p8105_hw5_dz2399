@@ -63,7 +63,7 @@ unsolved_homi <- df_homicide %>%
   summarise(unsolved_homicide = n()) 
 
 
-df_total_unsolved <- merge(total_homi,unsolved_homi,by='city_state',all = T) 
+df_total_unsolved <- merge(total_homi,unsolved_homi,by='city_state') 
 
 knitr::kable(df_total_unsolved)
 
@@ -93,7 +93,7 @@ df_all_prop <- nest(df_total_unsolved,total_homicide:unsolved_homicide) %>%
 df_all_prop
 ```
 
-The plot
+The plot of estimates and CIs for each city
 ```{r}
 df_all_prop %>% 
   mutate(estimate=round(estimate,2)) %>% 
