@@ -13,9 +13,10 @@ library(purrr)
 
 ## Creating a dataset
 ```{r,message=F}
-files_name <- list.files('./data')
+files_name <- list.files('./data1')
+
 read_df <- function(x){
-  df <- read_csv(paste0('./data/',x))
+  df <- read_csv(paste0('./data1/',x))
   df}
 
 id <- files_name %>% 
@@ -34,13 +35,75 @@ df_all <- cbind(id,df_all) %>%
 
 label <- c('con'='Control', 'exp'='Experiment')
 
-ggplot(df_all, aes(x=week, y=value,color=id))+
-  geom_line()+
+ggplot(df_all, aes(x=week, y=value))+
   facet_grid(.~arm,labeller=as_labeller(label))+
+  geom_line(aes(color=as.factor(subject_id)))+
   ggtitle('Observations on each subject over time')+
   theme(legend.position='bottom')
 ```
 
 As the graph shows, the experiment group shows an increasing trend over time while the control group stays the same.
 
+
+## Question 2
+
+### City_state variable
+```{r}
+df_homicide <- read_csv('./data2/homicide_data.csv') %>%
+  janitor::clean_names() %>% 
+  mutate(city_state = paste(city,state,sep = ',')) 
+
+total_homi <- df_homicide %>% 
+  group_by(city_state) %>% 
+  summarise(total_homicide = n()) 
+
+unsolved_homi <- df_homicide %>% 
+  filter(disposition=='Closed without arrest'|disposition=='Open/No arrest') %>% 
+  group_by(city_state) %>% 
+  summarise(unsolved_homicide = n()) 
+
+
+df_total_unsolved <- merge(total_homi,unsolved_homi,by='city_state',all = T) 
+
+knitr::kable(df_total_unsolved)
+
+```
+
+## Baltimore
+```{r}
+baltimore <- df_total_unsolved %>% 
+  filter(city_state=='Baltimore,MD')
+
+p.test <- prop.test(baltimore$unsolved_homicide,baltimore$total_homicide) 
+
+broom::tidy(p.test)[,c(1,5,6)]
+```
+
+
+Iteration
+```{r}
+p_fun <- function(x){
+p.test <- prop.test(x$unsolved_homicide,x$total_homicide) 
+broom::tidy(p.test)[,c(1,5,6)]
+}
+
+df_all_prop <- nest(df_total_unsolved,total_homicide:unsolved_homicide) %>% 
+     mutate(prop_result=map(data,p_fun)) %>% 
+     unnest()
+df_all_prop
+```
+
+The plot
+```{r}
+df_all_prop %>% 
+  mutate(estimate=round(estimate,2)) %>% 
+  ggplot(aes(x=reorder(city_state,-estimate),y=estimate))+
+  geom_bar(stat = 'identity',alpha=.5)+
+  geom_errorbar(mapping=aes(x=city_state, ymin=conf.low, ymax=conf.high), width=0.1, size=1, color="blue",alpha=.5)+
+    coord_flip()+
+  xlab('Cities')+
+  ylab('Estimates with CI')
+  ggtitle('The estimates and CIs for each city')
+
+```
 
