@@ -46,11 +46,18 @@ As the graph shows, the experiment group shows an increasing trend over time whi
 
 
 ## Question 2
-
-### City_state variable
-```{r}
+### Describing the homicide dataset
+```{r, message=F}
 df_homicide <- read_csv('./data2/homicide_data.csv') %>%
-  janitor::clean_names() %>% 
+  janitor::clean_names()
+
+```
+
+The homicide dataset has the dimension of `r dim(df_homicide)[1]` rows and `r dim(df_homicide)[2]` columns. In the raw data, the character variables are uid, victim_last, victim_first, victim_race, victim_age, victim_sex, city, state, disposition. Numeric variables are lat and lon.
+
+### Creating the city_state variable and summary tables
+```{r}
+df_homicide <- df_homicide %>%
   mutate(city_state = paste(city,state,sep = ',')) 
 
 total_homi <- df_homicide %>% 
@@ -69,8 +76,9 @@ knitr::kable(df_total_unsolved)
 
 ```
 
-## Baltimore
-```{r}
+
+## Baltimore unsolved proportion table
+```{r,message=F}
 baltimore <- df_total_unsolved %>% 
   filter(city_state=='Baltimore,MD')
 
@@ -81,7 +89,7 @@ broom::tidy(p.test)[,c(1,5,6)]
 
 
 Iteration
-```{r}
+```{r,message=F}
 p_fun <- function(x){
 p.test <- prop.test(x$unsolved_homicide,x$total_homicide) 
 broom::tidy(p.test)[,c(1,5,6)]
@@ -94,7 +102,7 @@ df_all_prop
 ```
 
 The plot of estimates and CIs for each city
-```{r}
+```{r,message=F}
 df_all_prop %>% 
   mutate(estimate=round(estimate,2)) %>% 
   ggplot(aes(x=reorder(city_state,-estimate),y=estimate))+
@@ -107,3 +115,4 @@ df_all_prop %>%
 
 ```
 
+In this graph, we can observe that Chicago, Baltimore, New Orleans, are the top three cities of unsolved case proportions. 
