@@ -88,7 +88,7 @@ broom::tidy(p.test)[,c(1,5,6)]
 ```
 
 
-Iteration
+### Iteration
 ```{r,message=F}
 p_fun <- function(x){
 p.test <- prop.test(x$unsolved_homicide,x$total_homicide) 
@@ -98,7 +98,7 @@ broom::tidy(p.test)[,c(1,5,6)]
 df_all_prop <- nest(df_total_unsolved,total_homicide:unsolved_homicide) %>% 
      mutate(prop_result=map(data,p_fun)) %>% 
      unnest()
-df_all_prop
+as.tibble(df_all_prop)
 ```
 
 The plot of estimates and CIs for each city
