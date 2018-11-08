@@ -106,7 +106,7 @@ The plot of estimates and CIs for each city
 df_all_prop %>% 
   mutate(estimate=round(estimate,2)) %>% 
   ggplot(aes(x=reorder(city_state,-estimate),y=estimate))+
-  geom_bar(stat = 'identity',alpha=.5)+
+  geom_point(stat = 'identity',alpha=.5)+
   geom_errorbar(mapping=aes(x=city_state, ymin=conf.low, ymax=conf.high), width=0.1, size=1, color="blue",alpha=.5)+
     coord_flip()+
   xlab('Cities')+
