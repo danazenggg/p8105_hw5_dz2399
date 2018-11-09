@@ -77,6 +77,9 @@ knitr::kable(df_total_unsolved)
 ```
 
 
+
+In this step, the cities with NAs are omitted in the merge step.
+
 ## Baltimore unsolved proportion table
 ```{r,message=F}
 baltimore <- df_total_unsolved %>% 
